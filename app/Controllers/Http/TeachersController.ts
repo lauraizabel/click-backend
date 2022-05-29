@@ -51,4 +51,12 @@ export default class TeachersController {
 
     return response.ok(teacher)
   }
+
+  public async delete({ response, params }: HttpContextContract) {
+    const { id }: { id: Number } = params
+    const teacher = await Teacher.findByOrFail('id', id)
+    await teacher.delete()
+
+    return response.ok({ message: 'Successfully deleted' })
+  }
 }
