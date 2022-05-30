@@ -1,5 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
+import Database from '@ioc:Adonis/Lucid/Database'
+
+import Class from 'App/Models/Class'
+import Student from 'App/Models/Student'
 
 import Teacher from 'App/Models/Teacher'
 
@@ -58,5 +62,43 @@ export default class TeacherController {
     await teacher.delete()
 
     return response.ok({ message: 'Successfully deleted' })
+  }
+
+  public async insertStudentOnClass({ response, request, params }: HttpContextContract) {
+    const { id }: { id: Number } = params
+
+    const findedTeacher = await Teacher.findByOrFail('id', id)
+
+    const StudentClassSchema = schema.create({
+      studentId: schema.number(),
+      classId: schema.number(),
+    })
+
+    const payload: any = await request.validate({ schema: StudentClassSchema })
+
+    const findedClass = await Class.findByOrFail('id', payload.classId)
+    const findedStudent = await Student.findByOrFail('id', payload.studentId)
+    const actualCapacity = (
+      await Database.query()
+        .from('class_student')
+        .select('*')
+        .where((q) => q.where('class_id', findedClass.id))
+    ).length
+
+    if (actualCapacity >= findedClass.maxStudents) {
+      return response.badRequest({ error: 'max capacity' })
+    }
+
+    if (findedClass.teacherId !== findedTeacher.id) {
+      return response.badRequest({ error: 'teacher is not the creator of the class' })
+    }
+
+    if (!findedClass.disponibility) {
+      return response.badRequest({ error: "the class doesn't have disponibility" })
+    }
+
+    await findedStudent.related('classes').attach([findedClass.id])
+
+    return response.ok({ msg: 'ok' })
   }
 }
