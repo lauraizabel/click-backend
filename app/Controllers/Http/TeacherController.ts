@@ -3,7 +3,7 @@ import { schema, rules } from '@ioc:Adonis/Core/Validator'
 
 import Teacher from 'App/Models/Teacher'
 
-export default class TeachersController {
+export default class TeacherController {
   public async getAll({ response }: HttpContextContract) {
     const teacher = await Teacher.all()
     return response.ok(teacher)
