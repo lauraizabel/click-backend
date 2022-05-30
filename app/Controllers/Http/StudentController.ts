@@ -48,6 +48,7 @@ export default class StudentController {
   public async getOne({ response, params }: HttpContextContract) {
     const { id }: { id: Number } = params
     const student = await Student.findByOrFail('id', id)
+    await student.load('classes')
 
     return response.ok(student)
   }
