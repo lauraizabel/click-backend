@@ -101,4 +101,28 @@ export default class TeacherController {
 
     return response.ok({ msg: 'ok' })
   }
+
+  public async removeStudentOnClass({ response, request, params }: HttpContextContract) {
+    const { id }: { id: Number } = params
+
+    const findedTeacher = await Teacher.findByOrFail('id', id)
+
+    const StudentClassSchema = schema.create({
+      studentId: schema.number(),
+      classId: schema.number(),
+    })
+
+    const payload: any = await request.validate({ schema: StudentClassSchema })
+
+    const findedClass = await Class.findByOrFail('id', payload.classId)
+    const findedStudent = await Student.findByOrFail('id', payload.studentId)
+
+    if (findedClass.teacherId !== findedTeacher.id) {
+      return response.badRequest({ error: 'teacher is not the creator of the class' })
+    }
+
+    await findedStudent.related('classes').detach([findedClass.id])
+
+    return response.ok({ msg: 'ok' })
+  }
 }

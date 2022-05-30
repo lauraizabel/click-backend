@@ -7,3 +7,4 @@ Route.put('/teacher/:id', 'TeacherController.edit')
 Route.delete('/teacher/:id', 'TeacherController.delete')
 
 Route.post('/teacher/:id/student-to-class', 'TeacherController.insertStudentOnClass')
+Route.delete('/teacher/:id/student-to-class', 'TeacherController.removeStudentOnClass')
